@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Dinner Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+
+    <style>
+
+        @font-face {
+            font-family: "Circular Std";
+            src: url("circular-std/CircularStd-Bold.woff") format('woff');
+            font-weight: bold;
+        }
+
+        @font-face {
+            font-family: "Circular Std";
+            src: url("circular-std/CircularStd-Book.woff") format('woff');
+            font-weight: normal;
+        }
+
+        /* Apply Circular std everywhere */
+        body {
+            font-family: "Circular Std", sans-serif;
+        }
+
+        .quantity-slider {
+            width: 100%;
+        }
+
+        .item-row {
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .toggle-btn {
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            margin: 0 2px;
+            font-size: 12px;
+        }
+
+        .excluded {
+            opacity: 0.5;
+            background-color: #f8f9fa;
+        }
+
+        .card-header {
+            padding: 0.5rem 1rem;
+            /* A christmassy red */
+            background-color: #b74336;
+            color: white;
+        }
+
+        .card-body {
+            padding: 0.5rem;
+        }
+
+        .form-label {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .card {
+            margin-bottom: 0.5rem;
+        }
+
+        .item-name {
+            transition: opacity 0.3s ease;
+        }
+
+        .item-name.fade-out {
+            opacity: 0;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .h5 {
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        #store_viz {
+            width: 100%;
+        }
+
+        #product-breakdown {
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="price-panel" class="container mt-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="h5 mb-0">Cost Analysis</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div id="store_viz"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="product-breakdown"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container py-3">
+        <h1>Customise your dinner</h1>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h5">Meat & Alternatives</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="item-row" data-base="turkey">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Turkey</span> (2.5kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.5" max="4" step="0.5" value="2.5">
+                        </div>
+
+                        <div class="item-row" data-base="nut_roast">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Nut Roast</span> (0.8kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.2" max="1.6" step="0.2" value="0.8">
+                        </div>
+
+                        <div class="item-row" data-base="pigs_in_blankets">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Pigs in Blankets</span>
+                                    (0.3kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-warning btn-sm toggle-btn fancy-btn">£</button>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.1" max="0.6" step="0.1" value="0.3">
+                        </div>
+
+                        <div class="item-row" data-base="sausage_meat">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Sausage Meat</span> (0.4kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.2" max="0.8" step="0.1" value="0.4">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h5">Vegetables</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="item-row" data-base="potatoes">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Potatoes</span> (1.2kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.6" max="2.4" step="0.3" value="1.2">
+                        </div>
+
+                        <div class="item-row" data-base="carrots">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Carrots</span> (0.8kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.4" max="1.6" step="0.2" value="0.8">
+                        </div>
+
+                        <div class="item-row" data-base="brussels_sprouts">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Brussels Sprouts</span>
+                                    (0.8kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.4" max="1.6" step="0.2" value="0.8">
+                        </div>
+
+                        <div class="item-row" data-base="parsnips">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Parsnips</span> (0.6kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.3" max="1.2" step="0.15" value="0.6">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h5">Drinks</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="item-row" data-base="sparkling_wine">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label">
+                                    <span class="item-name" data-standard="Prosecco"
+                                        data-fancy="Champagne">Prosecco</span> (1L)
+                                </label>
+                                <div>
+                                    <button class="btn btn-outline-warning btn-sm toggle-btn fancy-btn">£</button>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.5" max="2" step="0.5" value="1">
+                        </div>
+
+                        <div class="item-row" data-base="mulled_wine">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Mulled Wine</span> (1L)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.5" max="2" step="0.5" value="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h5">Condiments & Sauces</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="item-row" data-base="gravy">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Gravy</span> (0.75L)</label>
+                                <div>
+                                    <button class="btn btn-outline-warning btn-sm toggle-btn fancy-btn">£</button>
+                                    <button class="btn btn-outline-success btn-sm toggle-btn veg-btn">v</button>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.25" max="1.5" step="0.25" value="0.75">
+                        </div>
+
+                        <div class="item-row" data-base="bread_sauce">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Bread Sauce</span> (1kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.5" max="2" step="0.5" value="1">
+                        </div>
+
+                        <div class="item-row" data-base="oil">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Sunflower Oil</span> (0.5L)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.25" max="1" step="0.25" value="0.5">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="h5">Extras</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="item-row" data-base="stuffing">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Stuffing</span> (1kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.5" max="2" step="0.5" value="1">
+                        </div>
+
+                        <div class="item-row" data-base="nuts_and_fruit">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Mixed Nuts and Dried Fruit</span>
+                                    (0.3kg)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="0.15" max="0.6" step="0.15" value="0.3">
+                        </div>
+
+                        <div class="item-row" data-base="crackers">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label"><span class="item-name">Crackers</span> (4)</label>
+                                <div>
+                                    <button class="btn btn-outline-danger btn-sm toggle-btn exclude-btn">×</button>
+                                </div>
+                            </div>
+                            <input type="range" class="quantity-slider" min="2" max="8" step="2" value="4">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+
+        // Add this category mapping at the top level with other constants
+        const productCategories = {
+            'turkey': 'Meat & Alternatives',
+            'nut roast': 'Meat & Alternatives',
+            'roast ham': 'Meat & Alternatives',
+            'pigs in blankets frozen': 'Meat & Alternatives',
+            'pigs in blankets fancy': 'Meat & Alternatives',
+            'sausage meat': 'Meat & Alternatives',
+
+            'potatoes': 'Vegetables',
+            'carrots': 'Vegetables',
+            'brussels sprouts': 'Vegetables',
+            'parsnips': 'Vegetables',
+
+            'cheap prosecco': 'Drinks',
+            'Moet & Chandon Imperial Brut Champagne': 'Drinks',
+            'mulled wine': 'Drinks',
+
+            'gravy powder': 'Condiments & Sauces',
+            'fancy gravy': 'Condiments & Sauces',
+            'veg gravy': 'Condiments & Sauces',
+            'bread sauce powder': 'Condiments & Sauces',
+            'sunflower oil': 'Condiments & Sauces',
+
+            'stuffing dried': 'Extras',
+            'mixed nuts and dried fruit': 'Extras',
+            'crackers': 'Extras',
+            '1 lemon': 'Extras',
+            'bunch thyme': 'Extras',
+            'butter': 'Extras'
+        };
+
+
+
+        const itemVariants = {
+            'sparkling_wine': {
+                standard: 'Prosecco',
+                fancy: 'Champagne'
+            },
+            'pigs_in_blankets': {
+                standard: 'Pigs in Blankets',
+                fancy: 'Fancy Pigs in Blankets'
+            },
+            'gravy': {
+                standard: 'Gravy',
+                fancy: 'Fancy Gravy',
+                veg: 'Vegetarian Gravy'
+            }
+        };
+
+        const productMappings = {
+            'turkey': {
+                standard: 'turkey'
+            },
+            'nut_roast': {
+                standard: 'nut roast'
+            },
+            'ham': {
+                standard: 'roast ham'
+            },
+            'pigs_in_blankets': {
+                standard: 'pigs in blankets frozen',
+                fancy: 'pigs in blankets fancy'
+            },
+            'sausage_meat': {
+                standard: 'sausage meat'
+            },
+            'potatoes': {
+                standard: 'potatoes'
+            },
+            'carrots': {
+                standard: 'carrots'
+            },
+            'brussels_sprouts': {
+                standard: 'brussels sprouts'
+            },
+            'parsnips': {
+                standard: 'parsnips'
+            },
+            'sparkling_wine': {
+                standard: 'cheap prosecco',
+                fancy: 'Moet & Chandon Imperial Brut Champagne'
+            },
+            'mulled_wine': {
+                standard: 'mulled wine'
+            },
+            'gravy': {
+                standard: 'gravy powder',
+                fancy: 'fancy gravy',
+                veg: 'veg gravy'
+            },
+            'bread_sauce': {
+                standard: 'bread sauce powder'
+            },
+            'oil': {
+                standard: 'sunflower oil'
+            },
+            'stuffing': {
+                standard: 'stuffing dried'
+            },
+            'nuts_and_fruit': {
+                standard: 'mixed nuts and dried fruit'
+            },
+            'crackers': {
+                standard: 'crackers'
+            },
+            'lemon': {
+                standard: '1 lemon'
+            },
+            'thyme': {
+                standard: 'bunch thyme'
+            },
+            'butter': {
+                standard: 'butter'
+            }
+        };
+
+        class MenuState {
+            constructor(priceData) {
+                this.items = {
+                    turkey: { quantity: 2.5, excluded: false },
+                    nut_roast: { quantity: 0.8, excluded: false },
+                    ham: { quantity: 1, excluded: true },
+                    pigs_in_blankets: { quantity: 0.3, excluded: false, fancy: false },
+                    sausage_meat: { quantity: 0.4, excluded: false },
+                    potatoes: { quantity: 1.2, excluded: false },
+                    carrots: { quantity: 0.8, excluded: false },
+                    brussels_sprouts: { quantity: 0.8, excluded: false },
+                    parsnips: { quantity: 0.6, excluded: false },
+                    sparkling_wine: { quantity: 1, excluded: false, fancy: false },
+                    mulled_wine: { quantity: 1, excluded: false },
+                    gravy: { quantity: 0.05, excluded: false, fancy: false, veg: false },
+                    bread_sauce: { quantity: 0.1, excluded: false },
+                    oil: { quantity: 0.5, excluded: false },
+                    stuffing: { quantity: 1, excluded: false },
+                    // nuts_and_fruit: { quantity: 0.3, excluded: false },
+                    crackers: { quantity: 4, excluded: false }
+                };
+
+                this.storeIds = []; // Will be populated from CSV data
+                this.priceData = priceData;
+
+                this.setupListeners();
+            }
+
+            setupListeners() {
+                // Handle exclude buttons
+                document.querySelectorAll('.exclude-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const itemRow = e.target.closest('.item-row');
+                        const itemName = itemRow.dataset.base;
+                        itemRow.classList.toggle('excluded');
+                        const slider = itemRow.querySelector('.quantity-slider');
+                        slider.disabled = !slider.disabled;
+                        this.updateExclusion(itemName, itemRow.classList.contains('excluded'));
+                    });
+                });
+
+                // Handle fancy/veg toggles with name transitions
+                document.querySelectorAll('.fancy-btn, .veg-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        btn.classList.toggle('active');
+                        const itemRow = e.target.closest('.item-row');
+                        const itemName = itemRow.querySelector('.item-name');
+                        const baseItem = itemRow.dataset.base;
+
+                        if (itemVariants[baseItem]) {
+                            itemName.classList.add('fade-out');
+                            setTimeout(() => {
+                                const isFancyBtn = btn.classList.contains('fancy-btn');
+                                const isActive = btn.classList.contains('active');
+
+                                if (isFancyBtn) {
+                                    itemName.textContent = isActive ?
+                                        itemVariants[baseItem].fancy :
+                                        itemVariants[baseItem].standard;
+                                    this.updateFancy(baseItem, isActive);
+                                } else {
+                                    itemName.textContent = isActive ?
+                                        itemVariants[baseItem].veg :
+                                        itemVariants[baseItem].standard;
+                                    this.updateVeg(baseItem, isActive);
+                                }
+                                itemName.classList.remove('fade-out');
+                            }, 300);
+                        }
+                    });
+                });
+
+                // Handle sliders
+                document.querySelectorAll('.quantity-slider').forEach(slider => {
+                    slider.addEventListener('input', (e) => {
+                        const itemRow = e.target.closest('.item-row');
+                        const label = itemRow.querySelector('.form-label');
+                        const nameSpan = label.querySelector('.item-name');
+                        const currentName = nameSpan.textContent;
+                        const newValue = e.target.value;
+
+                        label.innerHTML = `<span class="item-name">${currentName}</span> (${newValue}${getUnit(currentName)})`;
+                        this.updateQuantity(itemRow.dataset.base, parseFloat(newValue));
+                    });
+                });
+            }
+
+            updateQuantity(itemName, quantity) {
+                this.items[itemName].quantity = quantity;
+                this.logState();
+            }
+
+            updateExclusion(itemName, excluded) {
+                this.items[itemName].excluded = excluded;
+                this.logState();
+            }
+
+            updateFancy(itemName, fancy) {
+                this.items[itemName].fancy = fancy;
+                this.logState();
+            }
+
+            updateVeg(itemName, veg) {
+                this.items[itemName].veg = veg;
+                this.logState();
+            }
+
+            getProductNames() {
+                const activeProducts = [];
+
+                Object.entries(this.items).forEach(([itemKey, item]) => {
+                    if (!item.excluded) {
+                        const mapping = productMappings[itemKey];
+                        if (mapping) {
+                            let productName;
+                            if (item.fancy && mapping.fancy) {
+                                productName = mapping.fancy;
+                            } else if (item.veg && mapping.veg) {
+                                productName = mapping.veg;
+                            } else {
+                                productName = mapping.standard;
+                            }
+                            activeProducts.push({
+                                name: productName,
+                                quantity: item.quantity
+                            });
+                        }
+                    }
+                });
+
+                return activeProducts;
+            }
+
+            updatePriceBreakdown() {
+                return null;
+                const activeProducts = this.getProductNames();
+                const breakdown = document.getElementById('price-breakdown');
+                const storeContributions = {};
+
+                // Initialize store totals
+                this.storeIds.forEach(storeId => {
+                    storeContributions[storeId] = 0;
+                });
+
+                // Clear existing rows
+                breakdown.innerHTML = '';
+
+                // Add rows for each active product
+                activeProducts.forEach(product => {
+                    const { name, quantity } = product;
+                    const row = document.createElement('tr');
+
+                    // Item name cell
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = name;
+                    row.appendChild(nameCell);
+
+                    // Quantity cell
+                    const quantityCell = document.createElement('td');
+                    quantityCell.textContent = quantity;
+                    row.appendChild(quantityCell);
+
+                    // Price cells for each store
+                    this.storeIds.forEach(storeId => {
+                        const priceCell = document.createElement('td');
+                        priceCell.className = 'text-end';
+
+                        let contribution = 0;
+                        if (this.priceData[name] && this.priceData[name][storeId]) {
+                            contribution = this.priceData[name][storeId] * quantity;
+                            storeContributions[storeId] += contribution;
+                            priceCell.textContent = `£${contribution.toFixed(2)}`;
+                        } else {
+                            priceCell.textContent = '-';
+                            priceCell.className = 'text-end text-muted';
+                        }
+                        row.appendChild(priceCell);
+                    });
+
+                    breakdown.appendChild(row);
+                });
+
+                // Update totals
+                this.storeIds.forEach(storeId => {
+                    const totalElement = document.getElementById(`total-store-${storeId}`);
+                    if (totalElement) {
+                        totalElement.textContent = `£${storeContributions[storeId].toFixed(2)}`;
+                    }
+                });
+            }
+
+            calculatePrices() {
+                const activeProducts = this.getProductNames();
+                const storePrices = {};
+                const missingPrices = [];
+
+                // Initialize store totals
+                this.storeIds.forEach(storeId => {
+                    storePrices[storeId] = 0;
+                });
+
+                activeProducts.forEach(product => {
+                    const { name, quantity } = product;
+
+                    this.storeIds.forEach(storeId => {
+                        if (!this.priceData[name]) {
+                            if (!missingPrices.includes(name)) {
+                                missingPrices.push(name);
+                            }
+                            return;
+                        }
+
+                        const price = this.priceData[name][storeId] || 0;
+                        if (price === 0 && !missingPrices.includes(`${name} (store ${storeId})`)) {
+                            missingPrices.push(`${name} (store ${storeId})`);
+                        }
+
+                        storePrices[storeId] += price * quantity;
+                    });
+                });
+
+                // Log any missing prices
+                if (missingPrices.length > 0) {
+                    console.warn('Missing prices for:', missingPrices);
+                }
+
+                return storePrices;
+            }
+
+            getState() {
+                return {
+                    items: { ...this.items },
+                    getActiveItems: () => {
+                        return Object.entries(this.items)
+                            .filter(([_, item]) => !item.excluded)
+                            .reduce((acc, [key, item]) => {
+                                acc[key] = { ...item };
+                                return acc;
+                            }, {});
+                    },
+                    getTotalQuantities: () => {
+                        return Object.entries(this.items)
+                            .filter(([_, item]) => !item.excluded)
+                            .reduce((acc, [key, item]) => {
+                                acc[key] = item.quantity;
+                                return acc;
+                            }, {});
+                    }
+                };
+            }
+
+            logState() {
+                const state = this.getState();
+                const prices = this.calculatePrices();
+                console.log('Current Menu State:', state);
+                console.log('Current Prices by Store:', prices);
+                this.updatePriceBreakdown();
+            }
+
+            updateVisualization() {
+                const prices = this.calculatePrices();
+
+                // Convert prices object to array format for Vega-Lite
+                const data = Object.entries(prices).map(([store, price]) => ({
+                    store: `${store}`,
+                    price: price
+                }));
+
+                const spec = {
+                    $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+                    width: 'container',
+                    height: 300,
+                    data: { values: data },
+                    mark: {
+                        type: 'bar',
+                        color: '#b74336',
+                        cornerRadiusEnd: 4
+                    },
+                    encoding: {
+                        x: {
+                            field: 'store',
+                            type: 'nominal',
+                            sort: "-y",
+                            axis: { title: '' }
+                        },
+                        y: {
+                            field: 'price',
+                            type: 'quantitative',
+                            axis: {
+                                title: 'Total Cost',
+                                labelExpr: "'£' + format(datum.value, '.0f')"
+                            }
+                        },
+                        tooltip: [
+                            { field: 'store', type: 'nominal' },
+                            { field: 'price', type: 'quantitative', format: '.2f', title: 'Cost (£)' }
+                        ]
+                    },
+                    config: {
+                        bar: { cornerRadiusEnd: 4 },
+                        view: { stroke: null }
+                    }
+                };
+
+                vegaEmbed('#store_viz', spec, {
+                    actions: true,
+                    config: { "font": "Circular Std", "mark": { "line": { "interpolate": "monotone" } }, "view": { "stroke": "transparent", "width": 400, "height": 300 }, "range": { "category": ["#36B7B4", "#E6224B", "#F4C245", "#0063AF", "#00A767", "#179FDB", "#EB5C2E"], "diverging": ["#E6224B", "#E54753", "#C9C9C9", "#179FDB", "#122B39"], "heatmap": ["#C9C9C9", "#179FDB", "#0063AF", "#122B39"], "ordinal": ["#00A767", "#36B7B4", "#179FDB", "#0063AF", "#243B5A"] }, "axisX": { "domainColor": "#676A86", "domainOpacity": 0.5, "grid": false, "labelAngle": 0, "labelColor": "#676A86", "labelOpacity": 0.7, "orient": "bottom", "tickColor": "#676A86", "tickCount": 10, "tickOpacity": 0.5, "title": false, "titleAlign": "center", "titleAnchor": "middle", "titleColor": "#676A86", "titleFontSize": 12, "titleOpacity": 0.8, "titleY": -15 }, "axisY": { "domainColor": "#676A86", "domainOpacity": 0.5, "gridColor": "#676A86", "gridDash": [1, 5], "gridOpacity": 0.5, "labelColor": "#676A86", "labelOpacity": 0.7, "labelPadding": 5, "tickColor": "#676A86", "tickCount": 8, "tickOpacity": 0.5, "ticks": false, "titleAlign": "left", "titleAngle": 0, "titleBaseline": "bottom", "titleColor": "#676A86", "titleFontSize": 12, "titleOpacity": 0.8, "titleX": 0, "titleY": -7 } },
+                    theme: 'default'
+                }).catch(console.error);
+            }
+
+            // Modify the logState method to include visualization update
+            logState() {
+                const state = this.getState();
+                const prices = this.calculatePrices();
+                console.log('Current Menu State:', state);
+                console.log('Current Prices by Store:', prices);
+                this.updatePriceBreakdown();
+                this.updateVisualization();
+            }
+
+            // Add these functions to the MenuState class
+            calculateProductBreakdown() {
+                const activeProducts = this.getProductNames();
+                const productCosts = {};
+
+                activeProducts.forEach(product => {
+                    const { name, quantity } = product;
+                    let totalCost = 0;
+                    let storeCount = 0;
+
+                    this.storeIds.forEach(storeId => {
+                        if (this.priceData[name] && this.priceData[name][storeId]) {
+                            totalCost += this.priceData[name][storeId] * quantity;
+                            storeCount++;
+                        }
+                    });
+
+                    // Calculate average cost across stores
+                    if (storeCount > 0) {
+                        productCosts[name] = totalCost / storeCount;
+                    }
+                });
+
+                return productCosts;
+            }
+
+            updateProductBreakdown() {
+                const productCosts = this.calculateProductBreakdown();
+
+                const data = Object.entries(productCosts)
+                    .map(([product, cost]) => ({
+                        product: product,
+                        category: productCategories[product] || 'Other',
+                        cost: cost
+                    }))
+                    .filter(item => item.cost > 0.5)
+                    .sort((a, b) => b.cost - a.cost);
+
+                const spec = {
+                    $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+                    width: 'container',
+                    height: 300,
+                    data: { values: data },
+                    mark: {
+                        type: 'arc',
+                        innerRadius: 80,
+                        outerRadius: 120
+                    },
+                    encoding: {
+                        theta: {
+                            field: 'cost',
+                            type: 'quantitative',
+                            stack: true
+                        },
+                        detail: {
+                            field: 'product',
+                            type: 'nominal'
+                        },
+                        opacity: {
+                            field: 'product',
+                            type: 'nominal',
+                            scale: {
+                                range: [0.4, 1]
+                            },
+                            legend: null
+                        },
+                        color: {
+                            field: 'category',
+                            type: 'nominal',
+                            legend: {
+                                orient: 'top',
+                                columns: 3,
+                                title:null
+                            },
+                            scale: {
+                                range: ["rgb(154,25,51)",
+                                    "rgb(229,159,71)",
+                                    "rgb(128,162,86)",
+                                    "rgb(58,89,71)",
+                                ],
+
+                            }
+                        },
+                        tooltip: [
+                            { field: 'product', type: 'nominal', title: 'Item' },
+                            { field: 'category', type: 'nominal', title: 'Category' },
+                            { field: 'cost', type: 'quantitative', format: '.2f', title: 'Average Cost (£)' }
+                        ]
+                    },
+                    view: { stroke: null }
+                };
+
+                vegaEmbed('#product-breakdown', spec, {
+                    actions: false,
+                    config: {
+                        "font": "Circular Std",
+                        "mark": { "line": { "interpolate": "monotone" } },
+                        "view": { "stroke": "transparent", "width": 400, "height": 300 },
+                        "range": {
+                            "category": ["#36B7B4", "#E6224B", "#F4C245", "#0063AF", "#00A767", "#179FDB", "#EB5C2E"],
+                            "diverging": ["#E6224B", "#E54753", "#C9C9C9", "#179FDB", "#122B39"],
+                            "heatmap": ["#C9C9C9", "#179FDB", "#0063AF", "#122B39"],
+                            "ordinal": ["#00A767", "#36B7B4", "#179FDB", "#0063AF", "#243B5A"]
+                        },
+                        "axisX": { /* ... existing axis config ... */ },
+                        "axisY": { /* ... existing axis config ... */ }
+                    },
+                    theme: 'default'
+                }).catch(console.error);
+            }
+
+            // Modify the existing logState method to include both visualizations
+            logState() {
+                const state = this.getState();
+                const prices = this.calculatePrices();
+                console.log('Current Menu State:', state);
+                console.log('Current Prices by Store:', prices);
+                this.updatePriceBreakdown();
+                this.updateVisualization();
+                this.updateProductBreakdown();
+            }
+
+        }
+
+        function getUnit(itemName) {
+            if (itemName.toLowerCase().includes('wine') ||
+                itemName.toLowerCase().includes('gravy')) return 'L';
+            if (itemName === 'Crackers') return '';
+            return 'kg';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const storeMapping = {
+                1: 'Tesco',
+                2: 'Sainsbury\'s',
+                3: 'Asda',
+                4: 'Morrisons',
+                5: 'Aldi',
+                8: 'Waitrose'
+            };
+
+            d3.csv('prices_2024_export.csv')
+                .then(data => {
+                    // Process the CSV data into our required format
+                    const priceData = {};
+                    const storeNames = new Set();
+
+                    data.forEach(row => {
+                        const itemName = row.item_name;
+                        const storeId = parseInt(row.store_id);
+                        const price = parseFloat(row.scaled_price);
+
+                        // Only process stores that are in our mapping
+                        if (storeMapping[storeId]) {
+                            const storeName = storeMapping[storeId];
+                            storeNames.add(storeName);
+
+                            if (!priceData[itemName]) {
+                                priceData[itemName] = {};
+                            }
+                            priceData[itemName][storeName] = price;
+                        }
+                    });
+
+                    // Initialize menu state with processed price data
+                    window.menuState = new MenuState(priceData);
+                    window.menuState.storeIds = Array.from(storeNames).sort();
+
+                    // Log initial state
+                    window.menuState.logState();
+                })
+                .catch(error => {
+                    console.error('Error loading price data:', error);
+                    // Initialize with empty price data if loading fails
+                    window.menuState = new MenuState({});
+                    window.menuState.storeIds = ['Tesco', 'Waitrose'];
+                });
+        });
+    </script>
+</body>
+
+</html>
